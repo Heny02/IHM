@@ -1,58 +1,66 @@
 import apiSlice from "./apiSlice";
 
-interface Utilisateur {
+interface Session {
   id: string;
-  name: string;
-  email: string;
-  // Ajoutez d'autres propriétés de l'utilisateur ici
+  debutSession: string; // Date sous forme de string
+  finSession?: string;
+  duree?: number;
+  tarifHoraire: number;
+  montantTotal: number;
+  clientId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-const utilisateurApiSlice = apiSlice.injectEndpoints({
+const sessionApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getUtilisateurs: builder.query<Utilisateur[], void>({
+    getSessions: builder.query<Session[], void>({
       query: () => ({
-        url: "/api/utilisateur",
+        url: "/api/session",
       }),
     }),
 
-    getUtilisateurById: builder.query<Utilisateur, string>({
+    getSessionById: builder.query<Session, string>({
       query: (id: string) => ({
-        url: `/api/utilisateur/${id}`,
+        url: `/api/session/${id}`,
       }),
     }),
 
-    createUtilisateur: builder.mutation<Utilisateur, Partial<Utilisateur>>({
+    createSession: builder.mutation<Session, Partial<Session>>({
       query: (data) => ({
-        url: "/api/utilisateur",
+        url: "/api/session",
         method: "POST",
         body: data,
       }),
     }),
 
-    updateUtilisateur: builder.mutation<
+    updateSession: builder.mutation<
       void,
-      { id: string; data: Partial<Utilisateur> }
+      { id: string; data: Partial<Session> }
     >({
       query: ({ data, id }) => ({
-        url: `/api/utilisateur/${id}`,
+        url: `/api/session/${id}`,
         method: "PUT",
         body: data,
       }),
     }),
 
-    deleteUtilisateur: builder.mutation<void, string>({
+    deleteSession: builder.mutation<void, string>({
       query: (id) => ({
-        url: `/api/utilisateur/${id}`,
+        url: `/api/session/${id}`,
         method: "DELETE",
       }),
     }),
   }),
+  overrideExisting: false, // Évite d'écraser les endpoints existants
 });
 
 export const {
-  useCreateUtilisateurMutation,
-  useUpdateUtilisateurMutation,
-  useDeleteUtilisateurMutation,
-  useGetUtilisateursQuery,
-  useGetUtilisateurByIdQuery,
-} = utilisateurApiSlice;
+  useCreateSessionMutation,
+  useUpdateSessionMutation,
+  useDeleteSessionMutation,
+  useGetSessionsQuery,
+  useGetSessionByIdQuery,
+} = sessionApiSlice;
+
+export default sessionApiSlice;

@@ -1,7 +1,13 @@
-// components/Service.tsx
-import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
+import React, { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,65 +16,187 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import {
+  useGetServicesQuery,
+  useCreateServiceMutation,
+  useUpdateServiceMutation,
+  useDeleteServiceMutation,
+} from "@/redux/slices/service.api.slice";
 
-const services = [
-  { id: 1, name: "Web Development", price: "$1000", duration: "2 weeks" },
-  { id: 2, name: "Mobile App Development", price: "$2000", duration: "4 weeks" },
-  { id: 3, name: "UI/UX Design", price: "$500", duration: "1 week" },
-];
+interface ServiceFormData {
+  name: string;
+  price: string;
+  duration: string;
+}
 
 export const Service: React.FC = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [formData, setFormData] = useState<ServiceFormData>({
+    name: "",
+    price: "",
+    duration: "",
+  });
+
+  const { data: services = [], isLoading, isError } = useGetServicesQuery();
+  const [createService] = useCreateServiceMutation();
+  const [updateService] = useUpdateServiceMutation();
+  const [deleteService] = useDeleteServiceMutation();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (selectedService) {
+        await updateService({
+          id: selectedService,
+          data: formData,
+        }).unwrap();
+        toast.success("Service modifié avec succès");
+      } else {
+        await createService(formData).unwrap();
+        toast.success("Service créé avec succès");
+      }
+      resetForm();
+    } catch (error) {
+      toast.error("Une erreur est survenue");
+      console.error("Erreur lors de l'opération:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (selectedService) {
+      try {
+        await deleteService(selectedService).unwrap();
+        toast.success("Service supprimé avec succès");
+        setIsConfirmDeleteOpen(false);
+      } catch (error) {
+        toast.error("Erreur lors de la suppression");
+        console.error("Erreur lors de la suppression:", error);
+      }
+    }
+  };
+
+  const handleEdit = (service: any) => {
+    setSelectedService(service.id);
+    setFormData({
+      name: service.name,
+      price: service.price || "",
+      duration: service.duration || "",
+    });
+    setIsDialogOpen(true);
+  };
+
+  const confirmDelete = (serviceId: string) => {
+    setSelectedService(serviceId);
+    setIsConfirmDeleteOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({ name: "", price: "", duration: "" });
+    setSelectedService(null);
+    setIsDialogOpen(false);
+    setIsConfirmDeleteOpen(false);
+  };
+
+  if (isLoading) {
+    return <div className="p-6">Chargement des services...</div>;
+  }
+
+  if (isError) {
+    return <div className="p-6">Erreur lors du chargement des services</div>;
+  }
+
   return (
     <div className="p-6">
       <div className="bg-background rounded-md border">
         <div className="flex items-center justify-between p-4">
           <h2 className="text-xl font-semibold">Services</h2>
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>Add Service</Button>
+              <Button>Ajouter un Service</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add Service</DialogTitle>
-                <DialogDescription>
-                  Add a new service to your list.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
-                  <Input id="name" className="col-span-3" />
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>
+                    {selectedService
+                      ? "Modifier le Service"
+                      : "Ajouter un Service"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {selectedService
+                      ? "Modifier les informations du service"
+                      : "Ajouter un nouveau service à votre liste"}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Nom
+                    </Label>
+                    <Input
+                      id="name"
+                      className="col-span-3"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="price" className="text-right">
+                      Prix
+                    </Label>
+                    <Input
+                      id="price"
+                      className="col-span-3"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="duration" className="text-right">
+                      Durée
+                    </Label>
+                    <Input
+                      id="duration"
+                      className="col-span-3"
+                      value={formData.duration}
+                      onChange={handleInputChange}
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="price" className="text-right">
-                    Price
-                  </Label>
-                  <Input id="price" className="col-span-3" />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="duration" className="text-right">
-                    Duration
-                  </Label>
-                  <Input id="duration" className="col-span-3" />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit">Save changes</Button>
-              </DialogFooter>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    Annuler
+                  </Button>
+                  <Button type="submit">
+                    {selectedService ? "Modifier" : "Enregistrer"}
+                  </Button>
+                </DialogFooter>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Duration</TableHead>
+              <TableHead>Nom</TableHead>
+              <TableHead>Prix</TableHead>
+              <TableHead>Durée</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -77,10 +205,50 @@ export const Service: React.FC = () => {
                 <TableCell>{service.name}</TableCell>
                 <TableCell>{service.price}</TableCell>
                 <TableCell>{service.duration}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(service)}
+                  >
+                    Modifier
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => confirmDelete(service.id)}
+                  >
+                    Supprimer
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+        <Dialog
+          open={isConfirmDeleteOpen}
+          onOpenChange={setIsConfirmDeleteOpen}
+        >
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Confirmer la suppression</DialogTitle>
+              <DialogDescription>
+                Êtes-vous sûr de vouloir supprimer ce service ?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsConfirmDeleteOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Supprimer
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

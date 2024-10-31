@@ -1,48 +1,59 @@
 import apiSlice from "./apiSlice";
 
-interface Utilisateur {
+interface Session {
   id: string;
-  name: string;
-  email: string;
-  // Ajoutez d'autres propriétés de l'utilisateur ici
+  montantTotal: number;
+  // Autres propriétés de session si nécessaire
 }
 
-const utilisateurApiSlice = apiSlice.injectEndpoints({
+interface Client {
+  id: string;
+  nom: string;
+  email: string | null;
+  sessions: Session[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ClientCreateInput {
+  nom: string;
+  email?: string;
+}
+
+const clientApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getUtilisateurs: builder.query<Utilisateur[], void>({
+    getClients: builder.query<Client[], void>({
       query: () => ({
-        url: "/api/utilisateur",
+        url: "/api/client",
       }),
     }),
 
-    getUtilisateurById: builder.query<Utilisateur, string>({
+    getClientById: builder.query<Client, string>({
       query: (id: string) => ({
-        url: `/api/utilisateur/${id}`,
+        url: `/api/client/${id}`,
       }),
     }),
 
-    createUtilisateur: builder.mutation<Utilisateur, Partial<Utilisateur>>({
+    createClient: builder.mutation<Client, ClientCreateInput>({
       query: (data) => ({
-        url: "/api/utilisateur",
+        url: "/api/client",
         method: "POST",
         body: data,
       }),
+
     }),
 
-    updateUtilisateur: builder.mutation<
-      void,
-      { id: string; data: Partial<Utilisateur> }
-    >({
-      query: ({ data, id }) => ({
-        url: `/api/utilisateur/${id}`,
+    updateClient: builder.mutation<Client, { id: string; data: Partial<ClientCreateInput> }>({
+      query: ({ id, data }) => ({
+        url: `/api/client/${id}`,
         method: "PUT",
         body: data,
       }),
     }),
 
-    deleteUtilisateur: builder.mutation<void, string>({
+    deleteClient: builder.mutation<void, string>({
       query: (id) => ({
-        url: `/api/utilisateur/${id}`,
+        url: `/api/client/${id}`,
         method: "DELETE",
       }),
     }),
@@ -50,9 +61,9 @@ const utilisateurApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
-  useCreateUtilisateurMutation,
-  useUpdateUtilisateurMutation,
-  useDeleteUtilisateurMutation,
-  useGetUtilisateursQuery,
-  useGetUtilisateurByIdQuery,
-} = utilisateurApiSlice;
+  useCreateClientMutation,
+  useUpdateClientMutation,
+  useDeleteClientMutation,
+  useGetClientsQuery,
+  useGetClientByIdQuery,
+} = clientApiSlice;

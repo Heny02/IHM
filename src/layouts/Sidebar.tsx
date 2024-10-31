@@ -2,8 +2,18 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { LayoutDashboard, Briefcase, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import {
+  LayoutDashboard,
+  Briefcase,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 interface SidebarProps {
   activeTab: string;
@@ -22,18 +32,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center justify-between px-3 py-2">
           {/* Logo toujours visible */}
           <img
-            src="/path/to/your/logo.png" // Remplacez par le chemin réel du logo
+            src="/cyber.jpg"
             alt="Logo"
-            className="h-8 w-auto mr-2"
+            className="h-16 w-32 mr-2" // Définissez une hauteur et une largeur
           />
-          
+
           {/* Chevron de réduction */}
           <Button
             variant="ghost"
             className="p-2 hidden sm:block" // Masque le bouton en dessous de sm
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
-            {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+            {isCollapsed ? (
+              <ChevronRight className="h-10 w-10" />
+            ) : (
+              <ChevronLeft className="h-10 w-10" />
+            )}
           </Button>
         </div>
 

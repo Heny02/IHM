@@ -25,7 +25,7 @@ export const Navbar: React.FC = () => {
           <span className="sr-only">Toggle theme</span>
         </Button>
         <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+          <AvatarImage src="" alt="@shadcn" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </div>

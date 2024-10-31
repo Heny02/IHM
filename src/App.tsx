@@ -7,6 +7,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Service } from "./pages/Service";
 import { Session } from "./pages/Session";
 
+
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState("dashboard");
 
